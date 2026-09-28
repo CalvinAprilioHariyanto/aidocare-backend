@@ -1,0 +1,5 @@
+ALTER TABLE "Patient"
+ADD COLUMN "firstName" TEXT,
+ADD COLUMN "lastName" TEXT,
+ADD COLUMN "gender" TEXT,
+ADD COLUMN "allergies" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[];

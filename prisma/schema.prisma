@@ -61,8 +61,12 @@ model Patient {
   id             String          @id @default(uuid()) @db.Uuid
   userId         String          @unique @db.Uuid
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName      String?
+  lastName       String?
   phone          String?
   dateOfBirth    DateTime?       @db.Date
+  gender         String?
+  allergies      String[]        @default([])
   appointments   Appointment[]
   medicalRecords MedicalRecord[]
   createdAt      DateTime        @default(now()) @db.Timestamptz(6)
