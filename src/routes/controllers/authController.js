@@ -1,10 +1,6 @@
 const authService = require("../../authService");
 
 function logUnexpectedError(operation, error) {
-  if (process.env.NODE_ENV === "production") {
-    return;
-  }
-
   let message = error instanceof Error ? error.message : String(error);
   for (const secret of [process.env.DATABASE_URL, process.env.JWT_SECRET]) {
     if (secret) {
