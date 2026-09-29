@@ -1,9 +1,15 @@
 const express = require("express");
 const authRoutes = require("./routes/authRoutes");
+const cors = require("cors");
 
 const app = express();
 
 app.use(express.json({ limit: "16kb" }));
+app.use(cors({
+  origin: "http://localhost:5173",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 app.use("/api/auth", authRoutes);
 
 app.use((request, response) => {
