@@ -1,4 +1,6 @@
 const express = require("express");
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./config/swagger");
 const authRoutes = require("./routes/authRoutes");
 const cors = require("cors");
 
@@ -6,10 +8,23 @@ const app = express();
 
 app.use(express.json({ limit: "16kb" }));
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: [
+    "http://localhost:5173",
+    "https://calvinapriliohariyanto.github.io"
+  ],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  explorer: true,
+  customSiteTitle: "Aido Care API Docs",
+}));
+app.get("/api-docs.json", (request, response) => {
+  response.setHeader("Content-Type", "application/json");
+  response.send(swaggerSpec);
+});
+
 app.use("/api/auth", authRoutes);
 
 app.use((request, response) => {
