@@ -87,7 +87,7 @@ const options = {
       },
     },
   },
-  apis: [path.resolve(__dirname, "../routes/authRoutes.js")],
+  apis: [path.resolve(__dirname, "../routes/*.js").replace(/\\/g, "/")],
 };
 
 module.exports = swaggerJsdoc(options);

@@ -8,6 +8,7 @@ const testSecret = previousSecret || "middleware-test-secret-with-32-characters"
 process.env.JWT_SECRET = testSecret;
 process.env.NODE_ENV = "test";
 
+const authService = require("../src/authService");
 const app = require("../src/app");
 
 let server;
@@ -53,10 +54,31 @@ async function get(path, accessToken) {
 }
 
 test("/api/auth/me returns safe identity for a valid token", async () => {
-  const accessToken = token({ userId: "user-123", role: "PATIENT" });
-  const { response, body } = await get("/api/auth/me", accessToken);
-  assert.equal(response.status, 200);
-  assert.deepEqual(body, { user: { id: "user-123", role: "PATIENT" } });
+  const originalGetUserProfile = authService.getUserProfile;
+  authService.getUserProfile = async (id) => ({
+    id,
+    role: "PATIENT",
+    email: "patient@example.test",
+    firstName: "Sarah",
+    lastName: "Wijaya",
+  });
+
+  try {
+    const accessToken = token({ userId: "user-123", role: "PATIENT" });
+    const { response, body } = await get("/api/auth/me", accessToken);
+    assert.equal(response.status, 200);
+    assert.deepEqual(body, {
+      user: {
+        id: "user-123",
+        role: "PATIENT",
+        email: "patient@example.test",
+        firstName: "Sarah",
+        lastName: "Wijaya",
+      },
+    });
+  } finally {
+    authService.getUserProfile = originalGetUserProfile;
+  }
 });
 
 test("/api/auth/me rejects a missing token", async () => {

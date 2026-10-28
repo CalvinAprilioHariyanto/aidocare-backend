@@ -166,4 +166,42 @@ async function login(body) {
   return { token: createToken(user), user: safeUser(user) };
 }
 
-module.exports = { AuthError, login, registerPatient };
+async function getUserProfile(userId) {
+  const prisma = await getPrismaClient();
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      role: true,
+      patient: {
+        select: {
+          firstName: true,
+          lastName: true,
+        },
+      },
+      doctor: {
+        select: {
+          id: true,
+          licenseNumber: true,
+          bio: true,
+        },
+      },
+    },
+  });
+
+  if (!user) {
+    return null;
+  }
+
+  return {
+    id: user.id,
+    role: user.role,
+    email: user.email,
+    firstName: user.patient?.firstName || null,
+    lastName: user.patient?.lastName || null,
+    doctorId: user.doctor?.id || null,
+  };
+}
+
+module.exports = { AuthError, login, registerPatient, getUserProfile };

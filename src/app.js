@@ -2,6 +2,11 @@ const express = require("express");
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./config/swagger");
 const authRoutes = require("./routes/authRoutes");
+const doctorRoutes = require("./routes/doctorRoutes");
+const doctorsRoutes = require("./routes/doctorsRoutes");
+const patientRoutes = require("./routes/patientRoutes");
+const patientsRoutes = require("./routes/patientsRoutes");
+const appointmentRoutes = require("./routes/appointmentRoutes");
 const cors = require("cors");
 
 const app = express();
@@ -26,6 +31,11 @@ app.get("/api-docs.json", (request, response) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/doctor", doctorRoutes);
+app.use("/api/doctors", doctorsRoutes);
+app.use("/api/patient", patientRoutes);
+app.use("/api/patients", patientsRoutes);
+app.use("/api/appointments", appointmentRoutes);
 
 app.use((request, response) => {
 	response.status(404).json({

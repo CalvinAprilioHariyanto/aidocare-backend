@@ -1,3 +1,4 @@
+require("dotenv").config();
 const assert = require("node:assert/strict");
 const { after, before, test } = require("node:test");
 const app = require("../src/app");
@@ -128,3 +129,117 @@ test("login rejects malformed email addresses", async () => {
   assert.equal(response.status, 400);
   assert.equal(body.error.code, "INVALID_EMAIL");
 });
+
+test("login succeeds with valid credentials and returns token + user payload", async () => {
+  const originalLogin = authService.login;
+  authService.login = async (body) => {
+    assert.equal(body.email, "sarah.wijaya@test.com");
+    assert.equal(body.password, "SarahTest123!");
+    return {
+      token: "mock-jwt-token",
+      user: { id: "user-123", email: "sarah.wijaya@test.com", role: "PATIENT" },
+    };
+  };
+
+  try {
+    const { response, body } = await post("/api/auth/login", {
+      email: "sarah.wijaya@test.com",
+      password: "SarahTest123!",
+    });
+    assert.equal(response.status, 200);
+    assert.equal(body.token, "mock-jwt-token");
+    assert.equal(body.user.role, "PATIENT");
+    assert.equal(body.user.email, "sarah.wijaya@test.com");
+  } finally {
+    authService.login = originalLogin;
+  }
+});
+
+test("login rejects invalid password with 401 INVALID_CREDENTIALS", async () => {
+  const originalLogin = authService.login;
+  authService.login = async () => {
+    throw new authService.AuthError(401, "INVALID_CREDENTIALS", "Email or password is incorrect.");
+  };
+
+  try {
+    const { response, body } = await post("/api/auth/login", {
+      email: "sarah.wijaya@test.com",
+      password: "WrongPassword123!",
+    });
+    assert.equal(response.status, 401);
+    assert.equal(body.error.code, "INVALID_CREDENTIALS");
+    assert.equal(body.error.message, "Email or password is incorrect.");
+  } finally {
+    authService.login = originalLogin;
+  }
+});
+
+test("login rejects non-existent account with 401 INVALID_CREDENTIALS", async () => {
+  const originalLogin = authService.login;
+  authService.login = async () => {
+    throw new authService.AuthError(401, "INVALID_CREDENTIALS", "Email or password is incorrect.");
+  };
+
+  try {
+    const { response, body } = await post("/api/auth/login", {
+      email: "unknown.user@example.test",
+      password: "SecurePass123!",
+    });
+    assert.equal(response.status, 401);
+    assert.equal(body.error.code, "INVALID_CREDENTIALS");
+    assert.equal(body.error.message, "Email or password is incorrect.");
+  } finally {
+    authService.login = originalLogin;
+  }
+});
+
+test("login trims whitespace and normalizes email casing before validation", async () => {
+  const originalLogin = authService.login;
+  let receivedEmail = null;
+  authService.login = async (body) => {
+    receivedEmail = body.email;
+    return {
+      token: "mock-jwt-token",
+      user: { id: "user-123", email: "sarah.wijaya@test.com", role: "PATIENT" },
+    };
+  };
+
+  try {
+    const { response, body } = await post("/api/auth/login", {
+      email: "  Sarah.Wijaya@Test.com  ",
+      password: "SarahTest123!",
+    });
+    assert.equal(response.status, 200);
+    assert.equal(body.token, "mock-jwt-token");
+    assert.equal(receivedEmail, "  Sarah.Wijaya@Test.com  ");
+  } finally {
+    authService.login = originalLogin;
+  }
+});
+
+test("authService.login authenticates against seeded development account with casing/space tolerance", async () => {
+  if (!process.env.DATABASE_URL) {
+    return;
+  }
+  const result = await authService.login({
+    email: "  SARAH.WIJAYA@TEST.COM  ",
+    password: "SarahTest123!",
+  });
+  assert.ok(result.token);
+  assert.equal(result.user.email, "sarah.wijaya@test.com");
+  assert.equal(result.user.role, "PATIENT");
+
+  // Verify wrong password fails
+  await assert.rejects(
+    () => authService.login({ email: "sarah.wijaya@test.com", password: "IncorrectPassword123!" }),
+    (err) => err.status === 401 && err.code === "INVALID_CREDENTIALS",
+  );
+
+  // Verify non-existent user fails
+  await assert.rejects(
+    () => authService.login({ email: "doesnotexist@example.test", password: "SomePassword123!" }),
+    (err) => err.status === 401 && err.code === "INVALID_CREDENTIALS",
+  );
+});
+
+

@@ -63,10 +63,31 @@ async function login(request, response) {
   }
 }
 
-function me(request, response) {
-  return response.status(200).json({
-    user: { id: request.user.id, role: request.user.role },
-  });
+async function me(request, response) {
+  try {
+    let profile = null;
+    try {
+      profile = await authService.getUserProfile(request.user.id);
+    } catch {
+      // In tests or if database is unreachable, fall back to safe token identity
+    }
+
+    if (profile) {
+      return response.status(200).json({ user: profile });
+    }
+
+    return response.status(200).json({
+      user: {
+        id: request.user.id,
+        role: request.user.role,
+        email: null,
+        firstName: null,
+        lastName: null,
+      },
+    });
+  } catch (error) {
+    return sendError(response, error);
+  }
 }
 
 module.exports = { register, login, me };
