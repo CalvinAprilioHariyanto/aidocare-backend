@@ -1,6 +1,14 @@
 const path = require("path");
 const swaggerJsdoc = require("swagger-jsdoc");
 
+const publicApiUrl = process.env.PUBLIC_API_URL ? process.env.PUBLIC_API_URL.trim() : "";
+const servers = [
+  {
+    url: publicApiUrl || "/",
+    description: publicApiUrl ? "Public API server" : "Current server",
+  },
+];
+
 const options = {
   definition: {
     openapi: "3.0.0",
@@ -9,12 +17,7 @@ const options = {
       version: "1.0.0",
       description: "Authentication and access control API for the Aido Care backend.",
     },
-    servers: [
-      {
-        url: "http://localhost:3000",
-        description: "Local development server",
-      },
-    ],
+    servers,
     components: {
       securitySchemes: {
         bearerAuth: {
