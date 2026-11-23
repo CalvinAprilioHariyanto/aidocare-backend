@@ -2,8 +2,7 @@
 
 RESTful API backend for the Aido Care healthcare management application, providing authentication, role-based authorization, doctor directory & working schedules, appointment booking & management, medical records, and prescriptions persistence.
 
-- **Live Backend:** [https://aidocare-backend-production.up.railway.app](https://aidocare-backend-production.up.railway.app/)
-- **Swagger Documentation:** [https://aidocare-backend-production.up.railway.app/api-docs](https://aidocare-backend-production.up.railway.app/api-docs) (or `http://localhost:3000/api-docs` locally)
+- **Swagger Documentation:** `/api-docs` (e.g. `http://localhost:3000/api-docs` locally)
 - **Live Frontend:** [https://calvinapriliohariyanto.github.io/aidocare-app/](https://calvinapriliohariyanto.github.io/aidocare-app/)
 - **Repository:** [https://github.com/CalvinAprilioHariyanto/aidocare-backend](https://github.com/CalvinAprilioHariyanto/aidocare-backend)
 
@@ -124,6 +123,7 @@ SEED_PASSWORD=YourSecureDevSeedPassword123! node prisma/seed.cjs
 
 ## 🌐 Deployment
 
-The backend is deployed to Railway with continuous deployment from GitHub:
-- Target: `https://aidocare-backend-production.up.railway.app`
-- Database: Managed PostgreSQL hosted on Railway
+The backend is configured for deployment with continuous deployment from GitHub:
+- Deployment Platform: Coolify
+- Database: Managed PostgreSQL (Neon)
+- Configuration: Managed via environment variables (`DATABASE_URL`, `PUBLIC_API_URL`, `CORS_ORIGINS`, `JWT_SECRET`, `PORT`, `NODE_ENV`).

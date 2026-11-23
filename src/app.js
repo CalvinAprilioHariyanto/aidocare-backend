@@ -9,17 +9,47 @@ const patientsRoutes = require("./routes/patientsRoutes");
 const appointmentRoutes = require("./routes/appointmentRoutes");
 const cors = require("cors");
 
+const isDev = process.env.NODE_ENV !== "production";
+
+function getAllowedOrigins() {
+  const configured = (process.env.CORS_ORIGINS || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  const defaultOrigins = [
+    "http://localhost:5173",
+    "https://calvinapriliohariyanto.github.io"
+  ];
+
+  return new Set([...defaultOrigins, ...configured]);
+}
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    const allowedOrigins = getAllowedOrigins();
+    if (allowedOrigins.has(origin)) {
+      return callback(null, true);
+    }
+
+    if (isDev && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(null, false);
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+};
+
 const app = express();
 
 app.use(express.json({ limit: "16kb" }));
-app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://calvinapriliohariyanto.github.io"
-  ],
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+app.use(cors(corsOptions));
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   explorer: true,
