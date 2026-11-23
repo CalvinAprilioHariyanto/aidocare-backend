@@ -204,4 +204,4 @@ async function getUserProfile(userId) {
   };
 }
 
-module.exports = { AuthError, login, registerPatient, getUserProfile };
+module.exports = { AuthError, login, registerPatient, getUserProfile, getPrismaClient };
