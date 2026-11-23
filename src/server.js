@@ -32,13 +32,26 @@ function sanitizeErrorMessage(error) {
     .replace(/\b(passwordHash|password|JWT_SECRET|DATABASE_URL)\b\s*[:=]\s*("[^"]*"|'[^']*'|[^,\s}]+)/gi, "$1=[redacted]");
 }
 
-async function verifyDatabaseConnection() {
-  try {
-    const prisma = await getPrismaClient();
-    await prisma.$queryRaw`SELECT 1`;
-    console.log("Database connection established successfully.");
-  } catch (error) {
-    console.error("Database connection failed on startup:", sanitizeErrorMessage(error));
+async function verifyDatabaseConnection(retries = 3, delayMs = 2000) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const prisma = await getPrismaClient();
+      await prisma.$queryRaw`SELECT 1`;
+      console.log("Database connection established successfully.");
+      return;
+    } catch (error) {
+      const sanitized = sanitizeErrorMessage(error);
+      if (attempt < retries) {
+        console.warn(
+          `Database connection attempt ${attempt}/${retries} failed (${sanitized}). Retrying in ${delayMs / 1000}s...`
+        );
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      } else {
+        console.error(
+          `Database connection failed after ${retries} attempts: ${sanitized}. Server will keep running.`
+        );
+      }
+    }
   }
 }
 
