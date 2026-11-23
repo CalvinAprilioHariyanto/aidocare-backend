@@ -12,8 +12,9 @@ RESTful API backend for the Aido Care healthcare management application, providi
 ## 👥 Team Members
 
 - **Calvin Aprilio Hariyanto** (`calvinuphstudent@gmail.com`)
-- **SirImro / Glenn** (`rawglennvids@gmail.com`)
+- **Hansen Emron Glenn Oscar Situmeang** (`rawglennvids@gmail.com`)
 - **Euro William Wijaya** (`eurowijaya123@gmail.com`)
+- **Bryan FriscoDryan Arciadi* (`bryanfriscod@gmail.com`)
 
 ---
 
